@@ -4,6 +4,14 @@ A local, full-screen office with team desks, moving employees, product boards an
 GitHub contribution details. GitHub is a **read-only source**: Workforce cannot push
 code, edit issues, submit reviews, merge PRs or change repository settings.
 
+## Watch the demo
+
+[![Animated preview of the Workforce 3D office demo](docs/workforce-demo-preview.gif)](docs/workforce-demo.mp4?raw=1)
+
+[Watch the 28-second video](docs/workforce-demo.mp4?raw=1) showing simulated activity,
+the contribution feed, teammate search, product boards and the 150-person view.
+The recording uses the fictional browser-only demo; no GitHub account is needed.
+
 ## Run the demo
 
 Requires Node 22+ and pnpm 10. No database, Redis, GitHub account, token or tunnel is
