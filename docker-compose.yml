@@ -1,0 +1,72 @@
+# Full stack on one machine. For production, point DATABASE_URL / REDIS_URL at managed services
+# and put api + web behind one HTTPS domain (see README → Deploying).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-workforce}
+      POSTGRES_DB: workforce
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    # BullMQ needs noeviction; appendonly keeps queued jobs across restarts.
+    command: ["redis-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+
+  migrate:
+    build: { context: ., dockerfile: infra/server.Dockerfile }
+    command: ["node", "dist/migrate.js"]
+    environment: &server-env
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-workforce}@postgres:5432/workforce
+      REDIS_URL: redis://redis:6379
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:?set GITHUB_WEBHOOK_SECRET}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_POLL_ENABLED: ${GITHUB_POLL_ENABLED:-true}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      GITHUB_ORG: ${GITHUB_ORG:-}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:-}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:-}
+      BOOTSTRAP_ADMIN_LOGINS: ${BOOTSTRAP_ADMIN_LOGINS:-}
+      NODE_ENV: production
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: { context: ., dockerfile: infra/server.Dockerfile }
+    environment:
+      <<: *server-env
+      ROLE: api
+    ports: ["4000:4000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_started }
+
+  worker:
+    build: { context: ., dockerfile: infra/server.Dockerfile }
+    environment:
+      <<: *server-env
+      ROLE: worker
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_started }
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/web.Dockerfile
+      args:
+        API_URL: http://api:4000
+        NEXT_PUBLIC_RT_URL: ${PUBLIC_API_URL:-http://localhost:4000}
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  redisdata:

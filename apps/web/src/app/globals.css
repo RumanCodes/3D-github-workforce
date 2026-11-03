@@ -1,0 +1,221 @@
+@import 'tailwindcss';
+
+/*
+ * Live Workforce tokens. A cool, quiet surface so that the few colored things on screen
+ * (live signal, waiting, failing) carry meaning. Dark mode has its own steps, not an inversion.
+ */
+:root {
+  color-scheme: light;
+  --surface: #f3f5f7;
+  --panel: #ffffff;
+  --sunken: #e8ecf0;
+  --line: #d6dce2;
+  --ink: #18212b;
+  --ink-2: #4f5b67;
+  --ink-3: #6b7783;
+  --signal: #0e7c86; /* live / verified */
+  --signal-soft: #d5eef0;
+  --wait: #a86400; /* waiting on someone */
+  --wait-soft: #f6e7cc;
+  --fail: #c2362f; /* failing, reserved */
+  --fail-soft: #f8dcd9;
+  --ok: #2e7d32;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --focus: #2a78d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --surface: #0f1419;
+    --panel: #161d24;
+    --sunken: #1d2630;
+    --line: #2a3541;
+    --ink: #e8edf2;
+    --ink-2: #a9b4bf;
+    --ink-3: #8794a1;
+    --signal: #3fb6bf;
+    --signal-soft: #11363a;
+    --wait: #e0a03c;
+    --wait-soft: #3a2a10;
+    --fail: #ef6b63;
+    --fail-soft: #3d1a18;
+    --ok: #66bb6a;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --focus: #6aa8f0;
+  }
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-wait: var(--wait);
+  --color-wait-soft: var(--wait-soft);
+  --color-fail: var(--fail);
+  --color-fail-soft: var(--fail-soft);
+  --color-ok: var(--ok);
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a {
+  color: inherit;
+}
+
+/* The one orchestrated motion: a new live event slides into the feed. */
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+    background: var(--signal-soft);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.arrive {
+  animation: arrive 900ms ease-out;
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.live-dot {
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrive,
+  .live-dot {
+    animation: none;
+  }
+}
+
+/* The office owns the viewport; controls sit around the scene. */
+.office-app {
+  --surface: #edf1ee;
+  --panel: #fff;
+  --sunken: #edf2ef;
+  --line: #d2ddd6;
+  --ink: #203a32;
+  --ink-2: #4d6258;
+  --ink-3: #5e7066;
+  color-scheme: light;
+  color: var(--ink);
+}
+.office-stage { position: relative; height: 100dvh; min-height: 480px; overflow: hidden; background: #e9eeeb; }
+.office-world, .office-canvas { position: absolute; inset: 0; }
+.office-topbar { position: absolute; z-index: 5; top: 20px; left: 24px; right: 24px; display: flex; align-items: center; gap: 24px; pointer-events: none; }
+.office-topbar > * { pointer-events: auto; }
+.office-brand { display: flex; align-items: center; gap: 11px; margin-right: auto; }
+.office-brand h1 { font-size: 19px; font-weight: 600; line-height: 1.2; }
+.office-brand span:not(.office-brand-mark) { font-size: 12px; color: var(--ink-2); }
+.office-brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: #254c40; color: white; font-weight: 600; font-size: 22px; }
+.office-toolbar, .office-account, .office-filters { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.office-toolbar button, .office-account button, .office-filters select { min-height: 36px; padding: 7px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+.office-stage button { cursor: pointer; }
+.office-stage button:disabled { cursor: wait; opacity: .6; }
+.office-toolbar button:hover, .office-account button:hover, .office-toolbar button[aria-expanded='true'] { background: var(--sunken); }
+.office-count { margin-left: 5px; color: var(--ink-2); font-size: 12px; }
+.office-filters { position: absolute; left: 24px; top: 86px; z-index: 4; }
+.office-filters select { max-width: 180px; background: transparent; }
+.office-bottom { position: absolute; bottom: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; gap: 16px; pointer-events: none; font-size: 12px; color: var(--ink-2); }
+.office-connection { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; background: white; border-radius: 6px; }
+.office-connection i { width: 7px; height: 7px; background: #a36517; border-radius: 50%; }
+.office-connection i[data-live='true'] { background: #287753; }
+.office-camera-help { align-self: center; }
+.office-drawer { position: absolute; z-index: 6; right: 24px; top: 86px; bottom: 64px; width: 360px; max-width: calc(100% - 32px); overflow: auto; background: white; border: 1px solid var(--line); border-radius: 12px; overscroll-behavior: contain; }
+.office-drawer-heading { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; padding: 20px; }
+.office-drawer h2, .office-setup h2 { font-size: 18px; font-weight: 600; }
+.office-drawer-heading p, .office-setup-heading p { font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+.office-drawer-heading button, .office-setup-heading button { min-width: 36px; min-height: 36px; border-radius: 6px; background: var(--sunken); }
+.office-search { display: block; margin: 0 20px 12px; }
+.office-search input { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+.office-search input::placeholder { color: var(--ink-2); }
+.office-roster { padding: 0 8px; }
+.office-roster button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px; text-align: left; border-radius: 6px; }
+.office-roster button:hover { background: var(--sunken); }
+.office-roster button > span:nth-child(2) { flex: 1; min-width: 0; }
+.office-roster strong { display: block; font-size: 14px; font-weight: 500; }
+.office-roster small { display: block; color: var(--ink-2); font-size: 12px; }
+.office-initial { width: 32px; height: 32px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; background: #e3ece6; color: #375546; }
+.office-events { padding: 0 20px; }
+.office-events li { padding: 16px 0; border-top: 1px solid var(--line); font-size: 14px; overflow-wrap: anywhere; }
+.office-events small { display: block; margin-top: 5px; color: var(--ink-2); font-size: 12px; }
+.office-event-source { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 12px; }
+.office-event-source span { color: var(--ink-2); }
+.office-event-source a { text-decoration: underline; text-underline-offset: 3px; }
+.office-panel-note { padding: 16px 20px; color: var(--ink-2); font-size: 12px; }
+.office-message, .office-empty { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: min(380px, calc(100% - 48px)); padding: 24px; background: white; border: 1px solid var(--line); border-radius: 10px; text-align: center; }
+.office-empty h2 { font-size: 18px; font-weight: 500; }
+.office-empty p { margin-top: 8px; font-size: 14px; color: var(--ink-2); }
+.office-message button { margin-top: 12px; text-decoration: underline; }
+.office-error { position: absolute; bottom: 68px; left: 24px; background: white; padding: 12px; color: #9f3128; }
+.office-setup { position: fixed; inset: 0; margin: auto; width: min(850px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; background: white; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+.office-setup::backdrop { background: rgb(25 44 35 / .4); }
+.office-setup-heading { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+@media (max-width: 760px) {
+ .office-topbar { top: 12px; left: 16px; right: 16px; flex-wrap: wrap; gap: 10px; }
+ .office-brand { flex: 1; }
+ .office-toolbar { order: 3; width: 100%; justify-content: space-between; }
+ .office-account { gap: 0; }
+ .office-account button { padding: 6px 8px; font-size: 12px; }
+ .office-filters { top: 120px; left: 16px; }
+ .office-filters select { max-width: 145px; }
+ .office-drawer { top: 170px; right: 16px; bottom: 60px; width: calc(100% - 32px); }
+ .office-bottom { bottom: 12px; left: 16px; right: 16px; }
+ .office-camera-help { display: none; }
+}
+.office-connect { display: inline-flex; align-items:center; padding:8px 12px; font-size:13px; }
+.office-demo-controls { position:absolute; left:24px; bottom:65px; z-index:4; display:flex; flex-wrap:wrap; align-items:center; gap:8px; max-width:calc(100% - 48px); background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:12px; }
+.office-demo-controls>span { color:var(--ink-2); }
+.office-demo-controls button,.office-demo-controls select { border:1px solid var(--line); border-radius:5px; padding:5px 8px; }
+.office-zone-label { white-space:nowrap; font-size:13px; font-weight:600; pointer-events:none; }
+.office-nameplate { background:#254c40; color:white; border-radius:6px; padding:6px 10px; white-space:nowrap; font-size:13px; }
+.office-product-sign { width:165px; background:#fff; padding:10px; border:1px solid #b8c8bd; border-radius:6px; text-align:left; color:#234538; }
+.office-product-sign strong,.office-product-sign span,.office-product-sign small {display:block;}
+.office-product-sign strong {font-size:13px;}.office-product-sign span,.office-product-sign small {font-size:11px;margin-top:4px;}
+@media(max-width:760px){.office-demo-controls{left:16px;bottom:55px;max-width:calc(100% - 32px);}.office-drawer{bottom:140px;}}
+
+.office-product-detail { margin:0 20px 16px; padding:12px; background:var(--sunken); border-radius:6px; }
+.office-product-detail h3 {font-weight:600;margin-bottom:8px;}.office-product-detail dl>div{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.office-product-detail dd{font-weight:600;}.office-product-detail p{font-size:13px;margin-top:8px;}.office-product-detail small{font-size:11px;color:var(--ink-2);}
+@media(max-width:760px){.office-brand>div{min-width:0;}.office-brand div>span{display:block;max-width:145px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.office-connect{padding:8px;font-size:12px;}}
+.office-connect-guide {font-size:14px;line-height:1.7;}.office-connect-guide ol{list-style:decimal;padding-left:24px;margin:20px 0;}.office-connect-guide li{margin:12px 0;}.office-connect-guide code{font-size:12px;background:var(--sunken);padding:2px 4px;}.office-connect-guide>a{display:inline-block;margin-top:18px;background:#254c40;color:#fff;padding:10px 16px;border-radius:6px;}

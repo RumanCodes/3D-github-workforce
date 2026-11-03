@@ -1,0 +1,12 @@
+'use client';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import type { OfficeLayout } from './office-model';
+export default function OfficeAdmin() {
+ const qc=useQueryClient(); const [name,setName]=useState('');const [ids,setIds]=useState<string[]>([]);
+ const q=useQuery({queryKey:['office-layout'],queryFn:()=>api.get<OfficeLayout>('/office/layout')});
+ const sync=useMutation({mutationFn:()=>api.post('/admin/github/sync'),onSuccess:()=>qc.invalidateQueries({queryKey:['office-layout']})});
+ const save=useMutation({mutationFn:()=>api.post('/office/products',{name,repositories:ids}),onSuccess:()=>{setName('');setIds([]);void qc.invalidateQueries({queryKey:['office-layout']});}});
+ return <section className="rounded-lg border border-line p-4 space-y-3"><h2 className="font-semibold">Office products</h2><p className="text-sm text-ink-2">Install the GitHub App on selected organization repositories, then sync. Connected repository activity is shared with everyone in this office.</p><button disabled={sync.isPending} onClick={()=>sync.mutate()} className="rounded border border-line p-2">{sync.isPending?'Syncing…':'Sync GitHub installation'}</button>{sync.isSuccess&&<p role="status">Installation synchronized.</p>}<form onSubmit={e=>{e.preventDefault();save.mutate();}} className="space-y-3"><label className="block">Product name <input required maxLength={100} value={name} onChange={e=>setName(e.target.value)} className="rounded border border-line p-2"/></label><div className="max-h-60 overflow-auto">{q.data?.repositories.map(r=><label className="block" key={r.id}><input type="checkbox" checked={ids.includes(r.id)} onChange={e=>setIds(old=>e.target.checked?[...old,r.id]:old.filter(id=>id!==r.id))}/> {r.name} {r.connected?'':'(disconnected)'} <small>{r.pollError ? `Sync failed: ${r.pollError}` : r.lastPolledAt ? `Synced ${new Date(r.lastPolledAt).toLocaleString()}` : 'Waiting for first sync'}</small></label>)}</div><button disabled={save.isPending} className="rounded border border-line p-2">Save product mapping</button></form>{(sync.error||save.error||q.error)&&<p role="alert">{(sync.error||save.error||q.error)?.message}</p>}{q.data?.products.map(p=><button className="mr-3 underline" key={p.id} onClick={()=>{setName(p.name);setIds(q.data!.repositories.filter(r=>r.productId===p.id).map(r=>r.id));}}>Edit {p.name}</button>)}</section>;
+}
